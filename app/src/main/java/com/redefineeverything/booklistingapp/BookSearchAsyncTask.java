@@ -96,9 +96,6 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
     @Override
     protected void onPostExecute(ArrayList<Book> books) {
         progDailog.dismiss();
-        ListView listView = (ListView) mActivity.findViewById(R.id.list_view);
-        listView.setAdapter(null);
-
         //if no books, or Internet connection error then create Toast.
 
         if (books == null || SearchActivity.IS_ERROR != 0) {
@@ -106,8 +103,9 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
             return;
         }else {
             //if books then update the UI (listview) from the custom adapter
-            BookAdapter bookAdapter = new BookAdapter(mActivity, books);
+            ListView listView = (ListView) mActivity.findViewById(R.id.list_view);
 
+            BookAdapter bookAdapter = new BookAdapter(mActivity, books);
             listView.setAdapter(bookAdapter);
         }
 

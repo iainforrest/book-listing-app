@@ -4,4 +4,5 @@
     <string name="no_books">Sorry, No Results Found!\n\nPlease Try Searching A Different Topic.</string>
     <string name="search_query_error">Please Enter A Topic To Search For.</string>
     <string name="no_internet">Sorry, Could not connect to server\n\nPlease check your internet connection and try again</string>
+    <string name="empty_list_view">Please enter a topic you would to search in the box above.</string>
 </resources>

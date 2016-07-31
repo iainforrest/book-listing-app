@@ -18,7 +18,7 @@ import android.widget.Toast;
 
 public class SearchActivity extends AppCompatActivity {
 
-    private ListView listView;
+    private static ListView listView;
 
     /** Various errors to determine Toast message**/
 
@@ -31,12 +31,12 @@ public class SearchActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        System.setProperty("http.keepAlive", "false");
-
-        listView = (ListView) findViewById(R.id.list_view);
-
 
         setContentView(R.layout.activity_search);
+
+        listView = (ListView) findViewById(R.id.list_view);
+        View emptyList = findViewById(R.id.empty_list_view);
+        listView.setEmptyView(emptyList);
 
         EditText searchQuearyView = (EditText) findViewById(R.id.search_query);
         //change the label of the return key on some keyboards
@@ -73,6 +73,7 @@ public class SearchActivity extends AppCompatActivity {
      * on the keyboard or from tapping the search icon.
      */
     public void runsearchQuery(){
+
         EditText searchQueryEditText = (EditText) findViewById(R.id.search_query);
 
         String searchQuery = searchQueryEditText.getText().toString();
@@ -90,6 +91,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     public static void error_messaging(Context context, int error){
+        listView.setAdapter(null);
         String error_message = "";
         switch (error){
             case INTERNET_ERROR:
@@ -104,7 +106,7 @@ public class SearchActivity extends AppCompatActivity {
                 break;
         }
 
-        Toast toast = Toast.makeText(context, error_message, Toast.LENGTH_LONG);
+        Toast toast = Toast.makeText(context, error_message, Toast.LENGTH_SHORT);
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
         //reset Error handling
@@ -124,7 +126,7 @@ public class SearchActivity extends AppCompatActivity {
                 //fade to invisible
                 .alpha(0.0f)
                 //set duration
-                .setDuration(100)
+                .setDuration(300)
                 //create a listener that activates when the animation is finished
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
@@ -142,8 +144,6 @@ public class SearchActivity extends AppCompatActivity {
                 });
 
         //make the listview visible
-        listView = (ListView) findViewById(R.id.list_view);
-        listView.setVisibility(View.VISIBLE);
 
 
     }
