@@ -28,11 +28,14 @@ public class Book {
 
     public String getAuthorList () {
         StringBuilder authors = new StringBuilder();
-        authors.append("By ");
-        for (int i = 0; i < mAuthors.size(); i++) {
-            authors.append(mAuthors.get(i));
-            if (i < mAuthors.size() -1){
-                authors.append(", ");
+        if (mAuthors.size() == 0){authors.append("No Authors");
+        }else {
+            authors.append("By ");
+            for (int i = 0; i < mAuthors.size(); i++) {
+                authors.append(mAuthors.get(i));
+                if (i < mAuthors.size() - 1) {
+                    authors.append(", ");
+                }
             }
         }
         return authors.toString();

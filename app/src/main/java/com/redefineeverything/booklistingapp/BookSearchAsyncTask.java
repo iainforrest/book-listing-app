@@ -215,12 +215,17 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
                     JSONObject bookObject = booksArray.getJSONObject(i);
                     JSONObject volumeInfoObject = bookObject.getJSONObject("volumeInfo");
                     String title = volumeInfoObject.getString("title");
-                    JSONArray authorsArray = volumeInfoObject.getJSONArray("authors");
-                    ArrayList<String> authors = new ArrayList<String>();
-                    if (authorsArray != null) {
-                        for (int j = 0; j < authorsArray.length(); j++) {
-                            authors.add(authorsArray.get(j).toString());
+                    ArrayList<String> authors = null;
+                    try {
+                        JSONArray authorsArray = volumeInfoObject.getJSONArray("authors");
+                        authors = new ArrayList<String>();
+                        if (authorsArray != null) {
+                            for (int j = 0; j < authorsArray.length(); j++) {
+                                authors.add(authorsArray.get(j).toString());
+                            }
                         }
+                    } catch (JSONException e) {
+                        authors = new ArrayList<String>();
                     }
                     try {
                         description = volumeInfoObject.getString("description");
