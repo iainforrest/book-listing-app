@@ -31,8 +31,6 @@ import java.util.ArrayList;
  */
 public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book>> {
 
-    /** Internet Error or no Books display**/
-    private int INTERNET_ERROR = 0;
 
     /** Tag for the log messages */
     public final String LOG_TAG = SearchActivity.class.getSimpleName();
@@ -60,15 +58,17 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
         progDailog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progDailog.setCancelable(true);
         progDailog.show();
-
-        ListView listView = (ListView) mActivity.findViewById(R.id.list_view);
-        listView.setAdapter(null);
     }
 
     @Override
     protected ArrayList<Book> doInBackground(String... searchQuery) {
-        // Create URL object
 
+        if (searchQuery[0] == ""){
+            SearchActivity.IS_ERROR = SearchActivity.SEARCH_QUERY_ERROR;
+            return null;
+        }
+
+        // Create URL object
         URL url = createUrl(searchQuery[0]);
 
         // Perform HTTP request to the URL and receive a JSON response back
@@ -77,11 +77,13 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
             jsonResponse = makeHttpRequest(url);
         } catch (IOException e) {
             Log.e("BookSearchAsyncTask","Error in connecting to and parsing the JSON : " +e.getMessage());
-
+            SearchActivity.IS_ERROR = SearchActivity.INTERNET_ERROR;
+            return null;
         }
 
         // Extract relevant fields from the JSON response and create an {@link Book} object
         ArrayList<Book> books = extractFeaturesFromJson(jsonResponse);
+        if (books == null || books.size()==0){SearchActivity.IS_ERROR = SearchActivity.NO_RESULTS_ERROR;}
 
         // Return the {@link Book} object as the result fo the {@link TsunamiAsyncTask}
         return books;
@@ -94,27 +96,21 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
     @Override
     protected void onPostExecute(ArrayList<Book> books) {
         progDailog.dismiss();
+        ListView listView = (ListView) mActivity.findViewById(R.id.list_view);
+        listView.setAdapter(null);
+
         //if no books, or Internet connection error then create Toast.
-        if (books == null || books.size() == 0 || INTERNET_ERROR == 1) {
-            String errorMessage = mActivity.getString(R.string.no_books);
-            if (INTERNET_ERROR == 1){errorMessage = mActivity.getString(R.string.no_internet);}
-            Toast toast = Toast.makeText(mActivity, errorMessage, Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
+
+        if (books == null || SearchActivity.IS_ERROR != 0) {
+            SearchActivity.error_messaging(mActivity, SearchActivity.IS_ERROR);
             return;
         }else {
             //if books then update the UI (listview) from the custom adapter
-            updateUI(books);
+            BookAdapter bookAdapter = new BookAdapter(mActivity, books);
+
+            listView.setAdapter(bookAdapter);
         }
 
-    }
-
-    private void updateUI(ArrayList<Book> books) {
-        ListView listView = (ListView) mActivity.findViewById(R.id.list_view);
-
-        BookAdapter bookAdapter = new BookAdapter(mActivity, books);
-
-        listView.setAdapter(bookAdapter);
     }
 
 
@@ -128,9 +124,11 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
                     + URLEncoder.encode(searchQuery, "UTF-8")+"&maxResults=10");
         } catch (MalformedURLException exception) {
             Log.e(LOG_TAG, "Error with creating URL", exception);
+            SearchActivity.IS_ERROR = SearchActivity.INTERNET_ERROR;
             return null;
         } catch (UnsupportedEncodingException e){
             Log.e(LOG_TAG, "Error with creating URL", e);
+            SearchActivity.IS_ERROR = SearchActivity.INTERNET_ERROR;
             return null;
         }
         return url;
@@ -159,12 +157,14 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
                 jsonResponse = readFromStream(inputStream);
             } else {
                 Log.e("MakeHttpRequest", "http response code was : " + responseCode);
-                INTERNET_ERROR = 1;
+                SearchActivity.IS_ERROR = SearchActivity.INTERNET_ERROR;
+                throw new IOException();
             }
 
         } catch (IOException e) {
             Log.e("MakehttpReuest","IOException thrown : " +e.getMessage());
-            INTERNET_ERROR = 1;
+            SearchActivity.IS_ERROR = SearchActivity.INTERNET_ERROR;
+            throw new IOException();
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
@@ -235,6 +235,7 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Problem parsing the earthquake JSON results", e);
+            //SearchActivity.IS_ERROR = SearchActivity.JSON_PARSE_ERROR;
         }
         return books;
     }

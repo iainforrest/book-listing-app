@@ -2,5 +2,6 @@
     <string name="app_name">Book Listing App</string>
     <string name="what_topic">What Topic Are You Interested In?</string>
     <string name="no_books">Sorry, No Results Found!\n\nPlease Try Searching A Different Topic.</string>
+    <string name="search_query_error">Please Enter A Topic To Search For.</string>
     <string name="no_internet">Sorry, Could not connect to server\n\nPlease check your internet connection and try again</string>
 </resources>

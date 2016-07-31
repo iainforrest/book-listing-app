@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,14 @@ import android.widget.Toast;
 public class SearchActivity extends AppCompatActivity {
 
     private ListView listView;
+
+    /** Various errors to determine Toast message**/
+
+    public static int IS_ERROR = 0;
+    public static final int INTERNET_ERROR = 1;
+    public static final int SEARCH_QUERY_ERROR = 2;
+    public static final int JSON_PARSE_ERROR = 3;
+    public static final int NO_RESULTS_ERROR = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,11 +76,7 @@ public class SearchActivity extends AppCompatActivity {
         EditText searchQueryEditText = (EditText) findViewById(R.id.search_query);
 
         String searchQuery = searchQueryEditText.getText().toString();
-
-        if (searchQuery.equals("")){
-            Toast.makeText(SearchActivity.this, "Please Enter A Topic To Search For", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (searchQuery.equals("")){error_messaging(this,SEARCH_QUERY_ERROR);return;}
 
         new BookSearchAsyncTask(this).execute(searchQuery);
 
@@ -84,6 +89,28 @@ public class SearchActivity extends AppCompatActivity {
         hideKeyboard();
     }
 
+    public static void error_messaging(Context context, int error){
+        String error_message = "";
+        switch (error){
+            case INTERNET_ERROR:
+            case JSON_PARSE_ERROR:
+                error_message = context.getString(R.string.no_internet);
+                break;
+            case SEARCH_QUERY_ERROR:
+                error_message = context.getString(R.string.search_query_error);
+                break;
+            case NO_RESULTS_ERROR:
+                error_message = context.getString(R.string.no_books);
+                break;
+        }
+
+        Toast toast = Toast.makeText(context, error_message, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
+        //reset Error handling
+        IS_ERROR = 0;
+
+    }
 
     /**
      * Switch to list view is performed at the first search. It removes the Question,
