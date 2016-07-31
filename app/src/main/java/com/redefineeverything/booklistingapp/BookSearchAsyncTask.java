@@ -30,6 +30,10 @@ import java.util.ArrayList;
  * update the UI with the first earthquake in the response.
  */
 public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book>> {
+
+    /** Internet Error or no Books display**/
+    private int INTERNET_ERROR = 0;
+
     /** Tag for the log messages */
     public final String LOG_TAG = SearchActivity.class.getSimpleName();
 
@@ -73,6 +77,7 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
             jsonResponse = makeHttpRequest(url);
         } catch (IOException e) {
             Log.e("BookSearchAsyncTask","Error in connecting to and parsing the JSON : " +e.getMessage());
+
         }
 
         // Extract relevant fields from the JSON response and create an {@link Book} object
@@ -89,16 +94,19 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
     @Override
     protected void onPostExecute(ArrayList<Book> books) {
         progDailog.dismiss();
-        if (books == null || books.size() == 0) {
-            // If no books, then create a toast to tell user that no books were found.
-            Toast toast = Toast.makeText(mActivity, "Sorry, No Results Found!\n\nPlease Try Searching A Different Topic.", Toast.LENGTH_LONG);
+        //if no books, or Internet connection error then create Toast.
+        if (books == null || books.size() == 0 || INTERNET_ERROR == 1) {
+            String errorMessage = mActivity.getString(R.string.no_books);
+            if (INTERNET_ERROR == 1){errorMessage = mActivity.getString(R.string.no_internet);}
+            Toast toast = Toast.makeText(mActivity, errorMessage, Toast.LENGTH_LONG);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
             return;
+        }else {
+            //if books then update the UI (listview) from the custom adapter
+            updateUI(books);
         }
 
-        //if books then update the UI (listview) from the custom adapter
-        updateUI(books);
     }
 
     private void updateUI(ArrayList<Book> books) {
@@ -151,10 +159,12 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
                 jsonResponse = readFromStream(inputStream);
             } else {
                 Log.e("MakeHttpRequest", "http response code was : " + responseCode);
+                INTERNET_ERROR = 1;
             }
 
         } catch (IOException e) {
             Log.e("MakehttpReuest","IOException thrown : " +e.getMessage());
+            INTERNET_ERROR = 1;
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
