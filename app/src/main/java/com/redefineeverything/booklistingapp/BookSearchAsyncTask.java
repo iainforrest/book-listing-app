@@ -208,7 +208,7 @@ public class BookSearchAsyncTask extends AsyncTask<String , Void, ArrayList<Book
             JSONArray booksArray = root.optJSONArray("items");
 
             // If there are results in the features array
-            if (booksArray.length() > 0) {
+            if (booksArray != null && booksArray.length() > 0) {
                 for (int i = 0; i < booksArray.length(); i++) {
                     JSONObject bookObject = booksArray.getJSONObject(i);
                     JSONObject volumeInfoObject = bookObject.getJSONObject("volumeInfo");
